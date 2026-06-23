@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karina Mathias — Dev FullStack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --night:#0B1A33;
+    --night-deep:#071226;
+    --sky:#1B5C8C;
+    --sky-soft:#2C5A85;
+    --star:#F2C84B;
+    --orange:#E8722C;
+    --orange-deep:#2C1A0A;
+    --cypress:#2E4D2F;
+    --cream:#E8E1C5;
+    --text-dim:#9AAFD1;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--night);
+    color:var(--cream);
+    font-family:'Inter', system-ui, sans-serif;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* Textura de tela/pincelada por cima de tudo */
+  .canvas-texture{
+    position:fixed;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    opacity:0.5;
+    mix-blend-mode:overlay;
+    background-image:
+      repeating-linear-gradient(115deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(25deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 4px);
+  }
+
+  /* ===== CÉU: redemoinhos + estrelas ===== */
+  .sky-bg{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    overflow:hidden;
+  }
+
+  .swirl-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    opacity:0.5;
+  }
+
+  .stars{
+    position:absolute;
+    inset:0;
+  }
+  .star-pt{
+    position:absolute;
+    border-radius:50%;
+    background:var(--star);
+    animation:twinkle 3.5s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:0.25; transform:scale(1);}
+    50%{opacity:1; transform:scale(1.4);}
+  }
+
+  /* Ciprestes/colinas fixos na base */
+  .horizon{
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    z-index:1;
+    pointer-events:none;
+  }
+
+  main{
+    position:relative;
+    z-index:2;
+    max-width:960px;
+    margin:0 auto;
+    padding:0 24px;
+  }
+
+  /* ===== HERO ===== */
+  .hero{
+    min-height:88vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding-top:48px;
+    padding-bottom:140px;
+  }
+
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    background:rgba(11,61,99,0.5);
+    border:1.5px solid var(--sky-soft);
+    border-radius:24px;
+    padding:8px 18px;
+    margin-bottom:30px;
+    width:fit-content;
+    opacity:0;
+    animation:fadeIn 0.6s ease forwards;
+    animation-delay:0.1s;
+    backdrop-filter:blur(2px);
+  }
+  .badge svg{width:16px;height:16px; color:var(--star); flex-shrink:0;}
+  .badge span{
+    font-size:13px;
+    letter-spacing:0.04em;
+    color:var(--text-dim);
+    font-weight:500;
+  }
+
+  .hero h1{
+    font-family:'Playfair Display', serif;
+    font-size:clamp(2.6rem, 6.6vw, 4.8rem);
+    font-weight:700;
+    line-height:1.08;
+    letter-spacing:-0.01em;
+    color:var(--cream);
+    opacity:0;
+    animation:fadeIn 0.7s ease forwards;
+    animation-delay:0.25s;
+  }
+
+  .hero h1 .accent{
+    color:var(--orange);
+    font-style:italic;
+  }
+
+  .hero p.role{
+    font-size:clamp(1.02rem, 2.1vw, 1.2rem);
+    color:var(--text-dim);
+    margin-top:22px;
+    max-width:580px;
+    line-height:1.7;
+    opacity:0;
+    animation:fadeIn 0.7s ease forwards;
+    animation-delay:0.42s;
+  }
+  .hero p.role strong{color:var(--star); font-weight:600;}
+
+  .hero-cta{
+    display:flex;
+    gap:16px;
+    margin-top:38px;
+    flex-wrap:wrap;
+    opacity:0;
+    animation:fadeIn 0.7s ease forwards;
+    animation-delay:0.58s;
+  }
+
+  .btn{
+    font-family:'Inter', sans-serif;
+    font-size:14.5px;
+    font-weight:600;
+    padding:14px 26px;
+    border-radius:10px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    transition:transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    border:1.5px solid transparent;
+  }
+  .btn.primary{
+    background:var(--orange);
+    color:var(--orange-deep);
+    box-shadow:0 0 22px rgba(232,114,44,0.35);
+  }
+  .btn.primary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 6px 28px rgba(232,114,44,0.5);
+  }
+  .btn.ghost{
+    color:var(--cream);
+    background:rgba(255,255,255,0.03);
+    border-color:var(--sky-soft);
+  }
+  .btn.ghost:hover{
+    border-color:var(--star);
+    color:var(--star);
+    transform:translateY(-2px);
+  }
+
+  @keyframes fadeIn{
+    from{opacity:0; transform:translateY(10px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+
+  /* ===== SECTION LABEL ===== */
+  .section-label{
+    font-size:12.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--star);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:28px;
+  }
+  .section-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:linear-gradient(90deg, var(--sky-soft), transparent);
+  }
+
+  /* ===== ABOUT ===== */
+  .about{
+    padding:50px 0 90px;
+  }
+  .about h2{
+    font-family:'Playfair Display', serif;
+    font-size:clamp(1.8rem, 3.8vw, 2.4rem);
+    font-weight:600;
+    letter-spacing:-0.01em;
+    margin-bottom:22px;
+    color:var(--cream);
+  }
+  .about p{
+    color:var(--text-dim);
+    line-height:1.85;
+    font-size:1.02rem;
+    max-width:640px;
+  }
+  .about p + p{margin-top:16px;}
+  .about strong{color:var(--cream); font-weight:600;}
+
+  .stack-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:28px;
+  }
+  .pill{
+    font-size:12.5px;
+    font-weight:500;
+    padding:7px 15px;
+    border:1.5px solid var(--sky-soft);
+    border-radius:20px;
+    color:var(--cream);
+    background:rgba(27,92,140,0.18);
+  }
+
+  /* ===== LINKS GRID ===== */
+  .links{
+    padding:10px 0 110px;
+  }
+
+  .links-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:18px;
+  }
+
+  .card{
+    position:relative;
+    background:rgba(16,43,74,0.55);
+    border:2px solid rgba(242,200,75,0.35);
+    border-radius:14px 19px 15px 20px / 18px 14px 20px 16px;
+    padding:24px 22px;
+    text-decoration:none;
+    color:var(--cream);
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    overflow:hidden;
+    transition:transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    backdrop-filter:blur(3px);
+  }
+
+  .card:hover{
+    transform:translateY(-4px);
+    border-color:var(--star);
+    box-shadow:0 0 28px rgba(242,200,75,0.22), 0 14px 32px rgba(0,0,0,0.4);
+    background:rgba(16,43,74,0.75);
+  }
+
+  .card .card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+  }
+
+  .card .icon-wrap{
+    width:44px;height:44px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(242,200,75,0.1);
+    color:var(--star);
+    flex-shrink:0;
+    transition:background 0.25s ease, color 0.25s ease;
+  }
+  .card:hover .icon-wrap{
+    background:rgba(242,200,75,0.18);
+  }
+  .card .icon-wrap svg{width:22px;height:22px;}
+
+  .card .arrow{
+    color:var(--text-dim);
+    font-size:16px;
+    transition:transform 0.25s ease, color 0.25s ease;
+  }
+  .card:hover .arrow{
+    color:var(--star);
+    transform:translate(3px,-3px);
+  }
+
+  .card h3{
+    font-family:'Playfair Display', serif;
+    font-size:1.15rem;
+    font-weight:600;
+    margin-top:6px;
+    color:var(--cream);
+  }
+  .card p{
+    font-size:0.87rem;
+    color:var(--text-dim);
+    line-height:1.55;
+  }
+
+  .card .tag-line{
+    font-size:11.5px;
+    color:var(--text-dim);
+    opacity:0.7;
+    margin-top:auto;
+    padding-top:12px;
+  }
+
+  .card.featured{
+    grid-column:1 / -1;
+    background:linear-gradient(135deg, var(--orange) 0%, #d3601d 100%);
+    border-color:var(--orange-deep);
+    box-shadow:0 0 30px rgba(232,114,44,0.3);
+  }
+  .card.featured h3, .card.featured p{color:var(--orange-deep);}
+  .card.featured .icon-wrap{
+    background:rgba(44,26,10,0.18);
+    color:var(--orange-deep);
+  }
+  .card.featured .arrow{color:var(--orange-deep); opacity:0.6;}
+  .card.featured .tag-line{color:var(--orange-deep); opacity:0.65;}
+  .card.featured:hover{
+    box-shadow:0 0 36px rgba(232,114,44,0.45), 0 14px 32px rgba(0,0,0,0.35);
+    background:linear-gradient(135deg, #ef7d33 0%, #d3601d 100%);
+  }
+
+  .badge-live{
+    font-size:10.5px;
+    font-weight:600;
+    color:var(--orange-deep);
+    background:var(--star);
+    padding:4px 10px;
+    border-radius:20px;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:auto;
+    width:fit-content;
+  }
+  .badge-live .blip{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--orange-deep);
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{opacity:1;}
+    50%{opacity:0.3;}
+  }
+
+  /* ===== FOOTER ===== */
+  footer{
+    padding:36px 24px 56px;
+    text-align:center;
+    position:relative;
+    z-index:2;
+  }
+  footer p{
+    font-size:12px;
+    color:var(--text-dim);
+  }
+  footer .heart{color:var(--orange);}
+
+  /* Focus visibility */
+  a:focus-visible, button:focus-visible{
+    outline:2px solid var(--star);
+    outline-offset:3px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important;}
+    html{scroll-behavior:auto;}
+  }
+
+  @media (max-width:720px){
+    .links-grid{grid-template-columns:1fr;}
+    .card.featured{grid-column:1;}
+    .hero{min-height:auto; padding-top:60px; padding-bottom:100px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas-texture"></div>
+
+<div class="sky-bg">
+  <svg class="swirl-svg" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#F2C84B" stop-opacity="0.6"/>
+        <stop offset="100%" stop-color="#F2C84B" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="haloGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#F2C84B" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#F2C84B" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- halo grande em torno da lua, marca do quadro -->
+    <circle cx="940" cy="140" r="230" fill="url(#haloGlow)"/>
+    <circle cx="940" cy="140" r="150" fill="url(#moonGlow)"/>
+    <circle cx="940" cy="140" r="40" fill="#F2E8B8" opacity="0.95"/>
+
+    <!-- redemoinho espiral principal, à esquerda do céu -->
+    <g opacity="0.4">
+      <path d="M260 260 C320 230, 360 250, 360 290 C360 330, 310 345, 280 320 C255 300, 265 270, 295 265" stroke="#F2C84B" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <path d="M120 230 Q220 150 340 200 Q420 235 380 300 Q345 355 270 345" stroke="#2C5A85" stroke-width="16" fill="none" opacity="0.7" stroke-linecap="round"/>
+      <path d="M60 280 Q180 190 330 230 Q450 265 410 350 Q375 420 270 410" stroke="#1B5C8C" stroke-width="22" fill="none" opacity="0.55" stroke-linecap="round"/>
+      <path d="M0 340 Q160 230 340 270 Q500 305 460 410" stroke="#2C5A85" stroke-width="26" fill="none" opacity="0.4" stroke-linecap="round"/>
+    </g>
+
+    <!-- segundo redemoinho, mais sutil, lado direito acima do horizonte -->
+    <g opacity="0.3">
+      <path d="M700 420 Q760 380 820 405 Q860 425 835 460 Q815 485 780 470" stroke="#F2C84B" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <path d="M650 450 Q740 380 840 420 Q910 450 880 510" stroke="#2C5A85" stroke-width="18" fill="none" opacity="0.6" stroke-linecap="round"/>
+    </g>
+
+    <!-- faixas onduladas de céu, pinceladas longas -->
+    <path d="M -50 130 Q 150 80, 320 130 T 700 115 T 1100 105 T 1300 120" stroke="#2C5A85" stroke-width="13" fill="none" opacity="0.32" stroke-linecap="round"/>
+    <path d="M -50 520 Q 200 470, 420 510 T 850 495 T 1300 485" stroke="#1B5C8C" stroke-width="20" fill="none" opacity="0.28" stroke-linecap="round"/>
+    <path d="M -50 600 Q 250 560, 500 590 T 950 575 T 1300 590" stroke="#2C5A85" stroke-width="16" fill="none" opacity="0.22" stroke-linecap="round"/>
+  </svg>
+  <div class="stars" id="starsField"></div>
+</div>
+
+<svg class="horizon" viewBox="0 0 1200 260" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" style="height:22vh; min-height:170px;">
+  <!-- colinas onduladas, pinceladas largas -->
+  <path d="M0 260 Q220 195 480 215 T960 205 T1200 220 L1200 260 Z" fill="#16314f"/>
+  <path d="M0 260 Q260 220 540 235 T1020 230 T1200 240 L1200 260 Z" fill="#0e2438"/>
+
+  <!-- cipreste alto e sinuoso, a árvore-assinatura do quadro -->
+  <g>
+    <path d="M118 260 L118 60 Q108 50 116 38 Q124 28 114 16 Q106 6 116 0" stroke="#0f2418" stroke-width="3" fill="none" opacity="0.9"/>
+    <path d="M118 256
+      C 96 250, 90 230, 100 214
+      C 84 208, 80 188, 96 172
+      C 80 164, 78 144, 96 130
+      C 82 122, 82 102, 100 90
+      C 88 82, 90 64, 108 54
+      C 98 46, 102 30, 118 22
+      C 108 16, 112 4, 124 0
+      C 134 6, 130 18, 122 24
+      C 138 32, 134 48, 120 56
+      C 138 66, 136 84, 120 94
+      C 138 104, 138 124, 122 134
+      C 140 142, 140 162, 122 172
+      C 140 180, 138 200, 120 210
+      C 138 218, 136 238, 122 248
+      C 134 252, 134 258, 124 262 Z"
+      fill="#1d3322" opacity="0.95"/>
+  </g>
+
+  <!-- segundo cipreste, menor, mais ao fundo -->
+  <path d="M250 260
+    C 235 254, 232 240, 242 230
+    C 230 224, 230 208, 242 198
+    C 232 192, 233 176, 246 168
+    C 236 160, 238 144, 250 138
+    C 242 132, 246 120, 256 116
+    C 250 122, 254 132, 248 138
+    C 258 144, 256 158, 246 166
+    C 258 174, 256 190, 244 198
+    C 256 206, 254 222, 242 230
+    C 254 236, 252 250, 240 256 Z"
+    fill="#193b2a" opacity="0.85"/>
+
+  <!-- vila: telhados e janelinhas acesas -->
+  <g opacity="0.95">
+    <path d="M430 230 L430 200 L450 185 L470 200 L470 230 Z" fill="#1d3322"/>
+    <path d="M520 240 L520 205 L545 188 L570 205 L570 240 Z" fill="#16314f"/>
+    <path d="M620 232 L620 198 L642 182 L664 198 L664 232 Z" fill="#1d3322"/>
+    <path d="M760 236 L760 206 L780 192 L800 206 L800 236 Z" fill="#16314f"/>
+    <path d="M880 230 L880 200 L902 185 L924 200 L924 230 Z" fill="#1d3322"/>
+
+    <rect x="442" y="208" width="13" height="16" rx="1.5" fill="#E8722C"/>
+    <rect x="533" y="216" width="12" height="15" rx="1.5" fill="#F2C84B"/>
+    <rect x="636" y="206" width="13" height="17" rx="1.5" fill="#E8722C"/>
+    <rect x="774" y="212" width="12" height="16" rx="1.5" fill="#E8722C"/>
+    <rect x="894" y="206" width="13" height="16" rx="1.5" fill="#F2C84B"/>
+  </g>
+
+  <path d="M0 260 Q300 222 600 232 T1200 226 L1200 260 Z" fill="#071226"/>
+</svg>
+
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="badge">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2L12 16.4 5.7 21l2.3-7.2L2 9.2h7.6z"/></svg>
+      
+    </div>
+
+    <h1>
+      Karina Mathias<br>
+      <span class="accent">Dev FullStack</span>
+    </h1>
+
+    <p class="role">
+      Desenvolvedora FullStack em formação — construo landing pages, apps e soluções digitais que resolvem problemas reais. <strong>Buscando minha primeira oportunidade na área.</strong>
+    </p>
+
+    <div class="hero-cta">
+      <a href="#sobre" class="btn primary">Conheça meu trabalho →</a>
+      <a href="#links" class="btn ghost">Ver todos os links</a>
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="about" id="sobre">
+    <div class="section-label">quem sou eu</div>
+    <div>
+      <h2>Olá, eu sou Karina Mathias 👋</h2>
+      <p>
+        Estudante de <strong>Tecnologia em Sistemas de Computação</strong>, em transição de carreira — saí da Educação Física, hoje rodo Uber para conciliar estudos e trabalho, e estudo programação com muita determinação. Não tenho o caminho tradicional, e é exatamente isso que me torna diferente.
+      </p>
+      <p>
+        Gosto de desenvolver <strong>landing pages</strong>, aplicativos e encontrar soluções para problemas reais. Aquela sensação de ver algo funcionando, de entregar algo que resolve a vida de alguém — é isso que me move. Tenho projetos pessoais no ar e alimento meu blog de estudos todos os dias.
+      </p>
+      <p>
+        Busco minha <strong>primeira oportunidade na área</strong> — CLT, freela, ou qualquer porta que me permita crescer como desenvolvedora. Se você chegou até aqui, que tal a gente conversar?
+      </p>
+      <div class="stack-row">
+        <span class="pill">Python</span>
+        <span class="pill">JavaScript</span>
+        <span class="pill">HTML & CSS</span>
+        <span class="pill">SQL</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- LINKS -->
+  <section class="links" id="links">
+    <div class="section-label">vamos nos conectar</div>
+
+    <div class="links-grid">
+
+      <a href="https://kmathiasdev.pythonanywhere.com/" target="_blank" rel="noopener" class="card featured">
+        <div class="card-top">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          </div>
+          <span class="arrow">↗</span>
+        </div>
+        <h3>Blog de Estudos</h3>
+        <p>Artigos sobre programação e tecnologia que escrevo enquanto aprendo. Atualizado todos os dias.</p>
+        <span class="tag-line">kmathiasdev.pythonanywhere.com</span>
+      </a>
+
+      <a href="https://kamathias89.github.io/dicas/" target="_blank" rel="noopener" class="card">
+        <div class="card-top">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <span class="arrow">↗</span>
+        </div>
+        <h3>Cursos Gratuitos</h3>
+        <p>Uma curadoria de cursos gratuitos de programação que recomendo para quem quer entrar na área.</p>
+        <span class="tag-line">kamathias89.github.io/dicas</span>
+      </a>
+
+      <a href="https://github.com/kamathias89" target="_blank" rel="noopener" class="card">
+        <div class="card-top">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.57.1.78-.25.78-.55v-2.17c-3.2.7-3.87-1.37-3.87-1.37-.53-1.33-1.29-1.69-1.29-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.74.4-1.26.72-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 015.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.59.23 2.76.11 3.05.74.8 1.18 1.83 1.18 3.08 0 4.41-2.69 5.39-5.25 5.67.41.36.78 1.08.78 2.17v3.22c0 .3.21.66.79.55A11.51 11.51 0 0023.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+          </div>
+          <span class="arrow">↗</span>
+        </div>
+        <h3>GitHub</h3>
+        <p>Meus repositórios, projetos pessoais e o código por trás de tudo que construo.</p>
+        <span class="tag-line">@kamathias89</span>
+      </a>
+
+      <a href="https://www.linkedin.com/in/kamathias/" target="_blank" rel="noopener" class="card">
+        <div class="card-top">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.27 2.38 4.27 5.47v6.27zM5.34 7.43a2.07 2.07 0 11.02-4.14 2.07 2.07 0 01-.02 4.14zM7.12 20.45H3.56V9h3.56v11.45z"/></svg>
+          </div>
+          <span class="arrow">↗</span>
+        </div>
+        <h3>LinkedIn</h3>
+        <p>Minha trajetória profissional, conexões e experiências na área de tecnologia.</p>
+        <span class="tag-line">/in/kamathias</span>
+      </a>
+
+      <a href="https://www.instagram.com/pratika.tech?igsh=MWI2dGl5ZGFrMHNodQ==" target="_blank" rel="noopener" class="card">
+        <div class="card-top">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none"/></svg>
+          </div>
+          <span class="arrow">↗</span>
+        </div>
+        <h3>Instagram</h3>
+        <p>Conteúdo sobre programação, rotina de estudos e bastidores da transição de carreira.</p>
+        <span class="tag-line">@pratika.tech</span>
+      </a>
+
+      <a href="https://www.tiktok.com/@pratika.tech" target="_blank" rel="noopener" class="card">
+        <div class="card-top">
+          <div class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.74a4.85 4.85 0 01-1.01-.05z"/></svg>
+          </div>
+          <span class="arrow">↗</span>
+        </div>
+        <h3>TikTok</h3>
+        <p>Vídeos curtos sobre tech, aprendizados do dia a dia e dicas de programação.</p>
+        <span class="tag-line">@pratika.tech</span>
+      </a>
+
+    </div>
+  </section>
+
+  <footer>
+    <p>feito com <span class="heart">♥</span> sob o céu noturno — © 2026</p>
+    <p style="margin-top:6px; font-size:11px; opacity:0.55;">paleta e composição inspiradas em "A Noite Estrelada", Van Gogh, 1889</p>
+  </footer>
+
+</main>
+
+<script>
+  // gera estrelas piscando espalhadas pelo céu
+  (function(){
+    var field = document.getElementById('starsField');
+    if(!field) return;
+    var count = 45;
+    for(var i=0;i<count;i++){
+      var s = document.createElement('div');
+      s.className = 'star-pt';
+      var size = (Math.random()*2 + 1).toFixed(1);
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.left = (Math.random()*100) + '%';
+      s.style.top = (Math.random()*65) + '%';
+      s.style.animationDelay = (Math.random()*3.5) + 's';
+      s.style.animationDuration = (2.5 + Math.random()*2.5) + 's';
+      field.appendChild(s);
+    }
+  })();
+</script>
+
+</body>
+</html>
